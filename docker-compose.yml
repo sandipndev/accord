@@ -21,8 +21,8 @@ services:
   accorde:
     image: sandipndev/accorde
     ports:
-      - "8765:8765"
+      - "3000:3000"
     depends_on:
       - server-pg
     environment:
-      - PG_CON=postgresql://user:password@server-pg:5432/pg"
+      - PG_CON=postgresql://user:password@server-pg:5432/pg

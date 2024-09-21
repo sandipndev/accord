@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-echo "[ ---------> ] Starting accorde-server"
-/usr/bin/accorde-server &
+export PATH="/root/.nix-profile/bin:$PATH"
 
-echo "[ ---------> ] Starting accorde-frontend"
-cd /app && pnpm run start
+pm2 start --name backend /usr/bin/accorde-server
+pm2 start --name frontend "cd /app && pnpm run start"
+
+pm2-runtime start all

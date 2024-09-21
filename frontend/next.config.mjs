@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Proxy Graphql and Media to Backend
-  rewrites: [
+  rewrites: () => [
     {
       source: "/graphql",
       destination: "http://localhost:8765/graphql",

@@ -18,24 +18,25 @@ FROM nixpkgs/nix-flakes:latest
   RUN nix-channel --update
 
   # ffmpeg and yt-dlp are command line utilties being used often
-  RUN nix-env -iA nixpkgs.ffmpeg-full nixpkgs.yt-dlp
+  RUN nix-env -iA nixpkgs.ffmpeg-full nixpkgs.yt-dlp nixpkgs.pnpm nixpkgs.pm2 nixpkgs.nodejs_20 nixpkgs.busybox
 
   COPY --from=build-backend /src/target/x86_64-unknown-linux-musl/release/accorde-server /usr/bin/accorde-server
 
   WORKDIR /app
-  COPY --from=build-frontend /app/package.json /app/pnpm-lock.yaml ./
-  COPY --from=build-frontend /app/.next ./.next
-  COPY --from=build-frontend /app/public ./public
-  COPY --from=build-frontend /app/next.config.js ./
-
-  USER 1000
-  WORKDIR /accorde
-  RUN mkdir /accorde
-  RUN chown -R 1000 /accorde && chmod -R u+w /accorde
-  ENV ACCORDE_HOME /accorde
+  COPY --from=build-frontend /app .
 
   COPY entrypoint.sh /entrypoint.sh
   RUN chmod +x /entrypoint.sh
 
+  WORKDIR /accorde
+  ENV ACCORDE_HOME /accorde
+
+  RUN mkdir -p /.pm2
+  
+  RUN chown -R 1000 /accorde && chmod -R u+w /accorde
+  RUN chown -R 1000 /.pm2 && chmod -R u+w /.pm2
+  USER 1000
+
+  ENV ENV production
   EXPOSE 3000 8765
   CMD ["/entrypoint.sh"]

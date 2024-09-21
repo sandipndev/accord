@@ -69,18 +69,14 @@ impl Processes {
             return Err(ProcessError::FileNotFound);
         }
 
-        // Semitone shifts from -10 to -1 and +1 to +10
         let semitone_shifts: Vec<i32> = (-10..=10).filter(|&s| s != 0).collect();
 
-        // Limit the number of concurrent FFmpeg processes
         let max_concurrent_processes = 4;
         let semaphore = Arc::new(Semaphore::new(max_concurrent_processes));
 
-        // Use FuturesUnordered for efficient asynchronous iteration
         let mut futures = FuturesUnordered::new();
 
         for semitone in semitone_shifts {
-            // Clone variables for use in the async block
             let downloaded_file_at = downloaded_file_at.clone();
             let home_path = self.config.home_absolute_path.clone();
             let process_id = process.id.clone();
@@ -91,10 +87,8 @@ impl Processes {
                 // Acquire a permit before starting the process
                 let _permit = semaphore.acquire().await;
 
-                // Calculate the pitch factor
                 let pitch_factor = 2f64.powf(semitone as f64 / 12.0);
 
-                // Construct the output file path
                 let output_file = format!(
                     "{}/{}_{}_ST.mp3",
                     home_path,
@@ -106,7 +100,6 @@ impl Processes {
                     }
                 );
 
-                // Build the FFmpeg command
                 let status = Command::new("ffmpeg")
                     .arg("-y") // Overwrite output files without asking
                     .arg("-i")
@@ -133,7 +126,6 @@ impl Processes {
             });
         }
 
-        // Process the futures as they complete
         while let Some(result) = futures.next().await {
             if let Err(e) = result {
                 eprintln!("Error during conversion: {}", e);
