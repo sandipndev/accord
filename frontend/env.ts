@@ -7,6 +7,6 @@ export const env = createEnv({
   },
   server: {},
   runtimeEnv: {
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_CORE_ADMIN_URL,
+    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
   },
 })
