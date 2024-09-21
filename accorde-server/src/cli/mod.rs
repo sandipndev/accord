@@ -26,7 +26,13 @@ struct Cli {
 pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    let config = Config::load_config(cli.config, EnvOverride { db_con: cli.pg_con })?;
+    let mut config = Config::load_config(cli.config, EnvOverride { db_con: cli.pg_con })?;
+
+    let absolute_path = std::path::absolute(cli.accorde_home.clone())
+        .expect("home is not an absolute path")
+        .to_string_lossy()
+        .into_owned();
+    config.app.process.home_absolute_path = absolute_path;
 
     run_cmd(&cli.accorde_home, config).await?;
 
@@ -36,7 +42,15 @@ pub async fn run() -> anyhow::Result<()> {
 async fn run_cmd(accorde_home: &str, config: Config) -> anyhow::Result<()> {
     store_server_pid(accorde_home, std::process::id())?;
     let pool = db::init_pool(&config.db).await?;
-    let app = crate::app::AccordeApp::run(pool, config.app).await?;
+    let app = crate::app::AccordeApp::run(pool.clone(), config.app).await?;
+
+    // The job runner will continue listening and running
+    // jobs until `runner` is dropped.
+    let _runner = crate::job::start_job_runner(&pool, app.clone())
+        .await
+        .context("job runner error");
+    app.processes().spawn_all_pending_jobs().await?;
+
     crate::server::run(config.server, app).await?;
     Ok(())
 }

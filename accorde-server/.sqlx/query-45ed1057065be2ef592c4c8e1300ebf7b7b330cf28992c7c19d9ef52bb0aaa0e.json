@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE processes\n            SET status = $2, updated_at = NOW()\n            WHERE id = $1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "process_status",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "DOWNLOADING",
+                "DOWNLOADED",
+                "CONVERTING",
+                "CONVERTED",
+                "DONE"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "45ed1057065be2ef592c4c8e1300ebf7b7b330cf28992c7c19d9ef52bb0aaa0e"
+}

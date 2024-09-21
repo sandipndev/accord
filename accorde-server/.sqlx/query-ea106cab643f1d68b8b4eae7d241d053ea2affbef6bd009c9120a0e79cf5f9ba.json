@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO processes(id, youtube_url)\n            VALUES ($1, $2)\n            RETURNING id, youtube_url, status AS \"process_status:ProcessStatus\", created_at\n        ",
+  "query": "\n            SELECT id, youtube_url, status AS \"process_status:ProcessStatus\", created_at\n            FROM processes\n            WHERE status = 'PENDING'\n        ",
   "describe": {
     "columns": [
       {
@@ -39,10 +39,7 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "Uuid",
-        "Text"
-      ]
+      "Left": []
     },
     "nullable": [
       false,
@@ -51,5 +48,5 @@
       false
     ]
   },
-  "hash": "c427266a753479ca49e48f29b7c62b6654e8be2aedc6a16d69e4dff729e728ed"
+  "hash": "ea106cab643f1d68b8b4eae7d241d053ea2affbef6bd009c9120a0e79cf5f9ba"
 }

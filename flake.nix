@@ -49,6 +49,8 @@
           nodejs
           ytt
           yq
+          openssl
+          pkg-config
 
           ffmpeg-full
           yt-dlp

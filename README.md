@@ -19,13 +19,13 @@ ffmpeg -i <FILENAME> -filter:a "rubberband=pitch=<PITCH>" output.mp3
 Plan:
 
 ```
-mutation accorde(URL: YoutubeLink!)
+mutation create_process(URL: YoutubeLink!)
 -----------------------------------
 (Sanitize Input)
 Spawn: Create Download Job
 Returns ProcessID
 
-query status(id: ProcessID!)
+query get_process(id: ProcessID!)
 ----------------------------
 Returns Status of Job
 

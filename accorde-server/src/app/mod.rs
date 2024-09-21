@@ -14,8 +14,8 @@ pub struct AccordeApp {
 }
 
 impl AccordeApp {
-    pub(crate) async fn run(pool: PgPool, _config: AppConfig) -> Result<Self, ApplicationError> {
-        let processes = Processes::new(&pool);
+    pub(crate) async fn run(pool: PgPool, config: AppConfig) -> Result<Self, ApplicationError> {
+        let processes = Processes::new(&pool, config.process);
         Ok(Self { processes })
     }
 

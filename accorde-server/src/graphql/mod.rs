@@ -2,6 +2,7 @@ mod schema;
 pub use schema::*;
 
 mod convert;
+mod process;
 
 use async_graphql::*;
 
