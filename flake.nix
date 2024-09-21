@@ -42,7 +42,6 @@
           cargo-watch
           postgresql
           docker-compose
-          bats
           jq
           typescript
           pnpm
