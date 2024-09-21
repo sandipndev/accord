@@ -44,24 +44,25 @@ Update State
 #### Docker Compose to run this directly
 ```
 version: "4"
-server-pg:
-  image: postgres:16.4
-  ports:
-  environment:
-    - POSTGRES_USER=user
-    - POSTGRES_PASSWORD=password
-    - POSTGRES_DB=pg
-  healthcheck:
-    test: ["CMD-SHELL", "pg_isready"]
-    interval: 5s
-    timeout: 5s
-    retries: 5
-accorde:
-  image: sandipndev/accorde
-  ports:
-    - "9099:3000"
-  depends_on:
-    - server-pg
-  environment:
-    - PG_CON=postgresql://user:password@server-pg:5432/pg
+services:
+  server-pg:
+    image: postgres:16.4
+    ports:
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  accorde:
+    image: sandipndev/accorde
+    ports:
+      - "9099:3000"
+    depends_on:
+      - server-pg
+    environment:
+      - PG_CON=postgresql://user:password@server-pg:5432/pg
 ```
