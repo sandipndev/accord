@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, youtube_url, status AS \"process_status:ProcessStatus\", created_at\n            FROM processes\n            WHERE status = 'PENDING'\n        ",
+  "query": "\n            SELECT id, youtube_url, name, status AS \"process_status:ProcessStatus\", created_at\n            FROM processes\n            WHERE id = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -15,6 +15,11 @@
       },
       {
         "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
         "name": "process_status:ProcessStatus",
         "type_info": {
           "Custom": {
@@ -33,20 +38,23 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
         "name": "created_at",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Uuid"
+      ]
     },
     "nullable": [
+      false,
       false,
       false,
       false,
       false
     ]
   },
-  "hash": "ea106cab643f1d68b8b4eae7d241d053ea2affbef6bd009c9120a0e79cf5f9ba"
+  "hash": "98043326b7cf4bc0ee66963f15e0c87251f9866362d7b1cd90a8a54daaecf6a0"
 }

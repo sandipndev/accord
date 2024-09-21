@@ -30,12 +30,13 @@ impl Processes {
         let id = ProcessId::new();
         let query = sqlx::query!(
             r#"
-            INSERT INTO processes(id, youtube_url)
-            VALUES ($1, $2)
-            RETURNING id, youtube_url, status AS "process_status:ProcessStatus", created_at
+            INSERT INTO processes(id, youtube_url, name)
+            VALUES ($1, $2, $3)
+            RETURNING id, youtube_url, name, status AS "process_status:ProcessStatus", created_at
         "#,
             uuid::Uuid::from(id),
             String::from(new_process.youtube_url),
+            String::from(new_process.name)
         )
         .fetch_one(&self.pool)
         .await?;
@@ -46,6 +47,7 @@ impl Processes {
 
         Ok(Process {
             id,
+            name: query.name,
             youtube_url: query.youtube_url.parse().expect("Invalid URL"),
             status: query.process_status,
             created_at: query.created_at,
@@ -55,7 +57,7 @@ impl Processes {
     pub async fn get(&self, process_id: ProcessId) -> Result<Process, ProcessError> {
         let query = sqlx::query!(
             r#"
-            SELECT id, youtube_url, status AS "process_status:ProcessStatus", created_at
+            SELECT id, youtube_url, name, status AS "process_status:ProcessStatus", created_at
             FROM processes
             WHERE id = $1
         "#,
@@ -66,10 +68,34 @@ impl Processes {
 
         Ok(Process {
             id: process_id,
+            name: query.name,
             youtube_url: query.youtube_url.parse().expect("Invalid URL"),
             status: query.process_status,
             created_at: query.created_at,
         })
+    }
+
+    pub async fn get_all(&self) -> Result<Vec<Process>, ProcessError> {
+        let query = sqlx::query!(
+            r#"
+            SELECT id, name, youtube_url, status AS "process_status:ProcessStatus", created_at
+            FROM processes
+            ORDER BY created_at DESC
+        "#,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(query
+            .into_iter()
+            .map(|row| Process {
+                id: ProcessId::from(row.id),
+                name: row.name,
+                youtube_url: row.youtube_url.parse().expect("Invalid URL"),
+                status: row.process_status,
+                created_at: row.created_at,
+            })
+            .collect())
     }
 
     pub async fn update_status(
@@ -95,7 +121,7 @@ impl Processes {
     pub async fn get_all_pending(&self) -> Result<Vec<Process>, ProcessError> {
         let query = sqlx::query!(
             r#"
-            SELECT id, youtube_url, status AS "process_status:ProcessStatus", created_at
+            SELECT id, name, youtube_url, status AS "process_status:ProcessStatus", created_at
             FROM processes
             WHERE status = 'PENDING'
         "#,
@@ -107,6 +133,7 @@ impl Processes {
             .into_iter()
             .map(|row| Process {
                 id: ProcessId::from(row.id),
+                name: row.name,
                 youtube_url: row.youtube_url.parse().expect("Invalid URL"),
                 status: row.process_status,
                 created_at: row.created_at,
