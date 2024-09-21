@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO processes(id, youtube_url)\n            VALUES ($1, $2)\n            RETURNING id, youtube_url, status AS \"process_status:ProcessStatus\", created_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "youtube_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "process_status:ProcessStatus",
+        "type_info": {
+          "Custom": {
+            "name": "process_status",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "DOWNLOADING",
+                "CONVERTING",
+                "DONE"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c427266a753479ca49e48f29b7c62b6654e8be2aedc6a16d69e4dff729e728ed"
+}

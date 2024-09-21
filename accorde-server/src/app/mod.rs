@@ -6,19 +6,20 @@ use sqlx::PgPool;
 pub use config::*;
 pub use error::*;
 
-use crate::primitives::ProcessID;
+use crate::process::Processes;
 
 #[derive(Clone)]
 pub struct AccordeApp {
-    pool: PgPool,
+    processes: Processes,
 }
 
 impl AccordeApp {
     pub(crate) async fn run(pool: PgPool, _config: AppConfig) -> Result<Self, ApplicationError> {
-        Ok(Self { pool })
+        let processes = Processes::new(&pool);
+        Ok(Self { processes })
     }
 
-    pub async fn accode(&self, youtube_url: String) -> Result<ProcessID, ApplicationError> {
-        Ok(ProcessID::new())
+    pub fn processes(&self) -> &Processes {
+        &self.processes
     }
 }

@@ -13,4 +13,4 @@ setup-db:
 reset-deps: clean-deps start-deps setup-db
 
 run-server:
-	cargo run --bin accorde-server -- --config ./bats/accorde.yml
+	SQLX_OFFLINE=true cargo run --bin accorde-server -- --config ./bats/accorde.yml
