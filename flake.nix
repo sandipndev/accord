@@ -49,6 +49,9 @@
           nodejs
           ytt
           yq
+
+          ffmpeg-full
+          yt-dlp
         ]
         ++ lib.optionals pkgs.stdenv.isDarwin [
           darwin.apple_sdk.frameworks.SystemConfiguration
