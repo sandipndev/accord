@@ -1,6 +1,8 @@
 mod schema;
 pub use schema::*;
 
+mod convert;
+
 use async_graphql::*;
 
 use crate::app::AccordeApp;

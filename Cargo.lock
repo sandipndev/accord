@@ -32,6 +32,7 @@ dependencies = [
  "sqlx",
  "thiserror",
  "tokio",
+ "url",
  "uuid",
 ]
 
@@ -2784,6 +2785,7 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]

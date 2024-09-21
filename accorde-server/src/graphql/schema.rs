@@ -1,5 +1,7 @@
 use async_graphql::*;
 
+use crate::{app::AccordeApp, primitives::ProcessID};
+
 #[derive(Default)]
 pub struct CoreQuery {}
 
@@ -15,7 +17,8 @@ pub struct CoreMutation {}
 
 #[Object(name = "Mutation")]
 impl CoreMutation {
-    async fn dummy2(&self) -> bool {
-        true
+    async fn accorde(&self, ctx: &Context<'_>, youtube_url: String) -> Result<ProcessID> {
+        let app = ctx.data_unchecked::<AccordeApp>();
+        app.accode(youtube_url).await.map_err(|e| e.into())
     }
 }
