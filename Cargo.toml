@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["accorde-server"]
+members = ["server"]
 
 [workspace.dependencies]
 anyhow = "1.0.86"
