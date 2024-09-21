@@ -17,3 +17,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  accorde:
+    image: sandipndev/accorde
+    ports:
+      - "8765:8765"
+    depends_on:
+      - server-pg
+    environment:
+      - PG_CON=postgresql://user:password@server-pg:5432/pg"

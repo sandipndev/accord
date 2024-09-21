@@ -14,4 +14,4 @@ FROM nixpkgs/nix-flakes:latest
   USER 1000
   WORKDIR /accorde
   ENV ACCORDE_HOME /accorde
-  CMD ["accorde-server"]
+  CMD ["/usr/bin/accorde-server"]
