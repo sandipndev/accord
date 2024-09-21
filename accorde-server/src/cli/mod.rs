@@ -32,7 +32,8 @@ pub async fn run() -> anyhow::Result<()> {
         .expect("home is not an absolute path")
         .to_string_lossy()
         .into_owned();
-    config.app.process.home_absolute_path = absolute_path;
+    config.app.process.home_absolute_path = absolute_path.clone();
+    config.server.home_absolute_path = absolute_path;
 
     run_cmd(&cli.accorde_home, config).await?;
 

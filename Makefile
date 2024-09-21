@@ -2,6 +2,7 @@ next-watch:
 	cargo watch -s 'cargo nextest run'
 
 clean-deps:
+	rm -rf .accorde
 	docker compose down
 
 start-deps:

@@ -120,20 +120,13 @@ impl Processes {
                     .await;
 
                 match status {
-                    Ok(status) if status.success() => {
-                        self.update_status(process.id, ProcessStatus::Converted)
-                            .await?;
-
-                        self.update_status(process.id, ProcessStatus::Done).await?;
-
-                        Ok(())
-                    }
+                    Ok(status) if status.success() => Ok(()),
                     Ok(status) => {
-                        eprintln!("yt-dlp exited with status code: {}", status);
+                        eprintln!("ffmpeg exited with status code: {}", status);
                         Err(ProcessError::CommandFailed)
                     }
                     Err(e) => {
-                        eprintln!("Failed to execute yt-dlp: {}", e);
+                        eprintln!("Failed to execute ffmpeg: {}", e);
                         Err(ProcessError::CommandFailed)
                     }
                 }
@@ -147,6 +140,11 @@ impl Processes {
                 return Err(e);
             }
         }
+
+        self.update_status(process.id, ProcessStatus::Converted)
+            .await?;
+
+        self.update_status(process.id, ProcessStatus::Done).await?;
 
         println!(
             "All pitch-shifted files have been generated successfully for process {}",
