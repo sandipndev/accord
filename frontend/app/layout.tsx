@@ -14,7 +14,7 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <html lang="en" className="antialiased">
       <ApolloServerWrapper>
-        <body>{children}</body>
+        <body className="max-w-4xl m-auto p-10 text-white">{children}</body>
       </ApolloServerWrapper>
     </html>
   )
