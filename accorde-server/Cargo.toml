@@ -1,0 +1,29 @@
+[package]
+name = "accorde-server"
+description = "Server for the Accorde project"
+repository = "https://github.com/sandipndev/accorde"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+
+fail-on-warnings = []
+
+[dependencies]
+anyhow = { workspace = true }
+async-graphql = { workspace = true }
+async-graphql-axum = { workspace = true }
+axum = { workspace = true }
+axum-extra = { workspace = true }
+chrono = { workspace = true }
+rust_decimal = { workspace = true }
+derive_builder = { workspace = true }
+thiserror = { workspace = true }
+clap = { workspace = true }
+sqlx = { workspace = true }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+serde_json = { workspace = true }
+serde_with = { workspace = true }
+uuid = { workspace = true }
+tokio = { workspace = true }
