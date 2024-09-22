@@ -26,6 +26,8 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
   const [currentSemitone, setCurrentSemitone] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
+  const [seekTime, setSeekTime] = useState(0)
+  const [isSeeking, setIsSeeking] = useState(false)
   const audioRefs = useRef<{ [key: number]: HTMLAudioElement }>({})
 
   // Preload all audio files once data is available
@@ -38,33 +40,44 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
 
       semitoneShifts.forEach((semitone) => {
         const semitoneLabel = semitone >= 0 ? `+${semitone}` : `${semitone}`
-        const fileName = `${processId}_${semitoneLabel}_ST.mp3`
+        const fileName =
+          semitone === 0 ? `${processId}.mp3` : `${processId}_${semitoneLabel}_ST.mp3`
         const fileUrl = `/media/${fileName}`
 
-        if (semitone === 0) {
-          const audio = new Audio(`/media/${processId}.mp3`)
-          audioRefs.current[semitone] = audio
-        } else {
-          const audio = new Audio(fileUrl)
-          audioRefs.current[semitone] = audio
-        }
+        const audio = new Audio(fileUrl)
+        audioRefs.current[semitone] = audio
       })
 
-      setPreloadingAudio(true)
+      setPreloadingAudio(false)
     }
-  }, [data, processId, setPreloadingAudio])
+  }, [data, processId])
 
   // Update currentTime when the audio is playing
   useEffect(() => {
     const audio = audioRefs.current[currentSemitone]
     if (audio) {
-      const updateTime = () => setCurrentTime(audio.currentTime)
+      const updateTime = () => {
+        setCurrentTime(audio.currentTime)
+        if (!isSeeking) {
+          setSeekTime(audio.currentTime)
+        }
+      }
+
+      const handleEnded = () => {
+        setIsPlaying(false)
+        setCurrentTime(0)
+        setSeekTime(0)
+        audio.currentTime = 0
+      }
+
       audio.addEventListener("timeupdate", updateTime)
+      audio.addEventListener("ended", handleEnded)
       return () => {
         audio.removeEventListener("timeupdate", updateTime)
+        audio.removeEventListener("ended", handleEnded)
       }
     }
-  }, [currentSemitone])
+  }, [currentSemitone, isSeeking])
 
   // Handle play/pause functionality
   const handlePlayPause = () => {
@@ -92,6 +105,7 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
       prevAudio.pause()
       const time = prevAudio.currentTime
       setCurrentTime(time)
+      setSeekTime(time)
 
       nextAudio.currentTime = time
       if (isPlaying) {
@@ -99,6 +113,22 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
       }
       setCurrentSemitone(newSemitone)
     }
+  }
+
+  // Handle seeking in the audio
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = parseFloat(e.target.value)
+    setSeekTime(time)
+    setIsSeeking(true)
+  }
+
+  const handleSeekEnd = () => {
+    const audio = audioRefs.current[currentSemitone]
+    if (audio) {
+      audio.currentTime = seekTime
+      setCurrentTime(seekTime)
+    }
+    setIsSeeking(false)
   }
 
   useEffect(() => {
@@ -110,15 +140,6 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
       setIsPlaying(false)
     }
   }, [])
-
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const audio = audioRefs.current[currentSemitone]
-    if (audio) {
-      const time = parseFloat(e.target.value)
-      audio.currentTime = time
-      setCurrentTime(time)
-    }
-  }
 
   const handleDownload = () => {
     const semitoneLabel =
@@ -157,7 +178,7 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
     )
 
   const playingAudio = audioRefs.current[currentSemitone]
-  const playTime = (playingAudio && playingAudio.currentTime) || 0
+  const playTime = (playingAudio && playingAudio.currentTime) || seekTime
   const duration = (playingAudio && playingAudio.duration) || 0
 
   return (
@@ -202,7 +223,9 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
             min="0"
             max={duration}
             value={playTime}
-            onChange={handleSeek}
+            onChange={handleSeekChange}
+            onMouseUp={handleSeekEnd}
+            onTouchEnd={handleSeekEnd}
             className="w-full range-input"
           />
           <div className="flex justify-between text-sm">
