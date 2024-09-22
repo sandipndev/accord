@@ -27,3 +27,60 @@
 body {
   background-color: var(--color-dark);
 }
+
+@layer components {
+  .range-input {
+    @apply w-full; /* Use Tailwind's width utility */
+    -webkit-appearance: none; /* Remove default styling */
+    appearance: none; /* Remove default styling */
+    background-color: transparent; /* Make the background transparent */
+  }
+
+  /* Track Styles */
+  .range-input::-webkit-slider-runnable-track {
+    @apply h-1 bg-zinc-500 rounded-full; /* Tailwind utilities for height, background color, and border radius */
+  }
+
+  .range-input::-moz-range-track {
+    @apply h-1 bg-zinc-500 rounded-full;
+  }
+
+  .range-input::-ms-track {
+    @apply h-1 bg-zinc-500 rounded-full;
+  }
+
+  /* Thumb Styles */
+  .range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    @apply h-4 w-4 bg-white rounded-full;
+    margin-top: -5px;
+  }
+
+  .range-input::-moz-range-thumb {
+    @apply h-4 w-4 bg-white rounded-full;
+    margin-top: -5px;
+  }
+
+  .range-input::-ms-thumb {
+    @apply h-4 w-4 bg-white rounded-full;
+    margin-top: -5px;
+  }
+
+  /* Focus Styles */
+  .range-input:focus {
+    outline: none;
+  }
+
+  /* Hover Effects */
+  .range-input:hover::-webkit-slider-runnable-track {
+    @apply bg-blue-600; /* Darken track on hover */
+  }
+
+  .range-input:hover::-moz-range-track {
+    @apply bg-blue-600;
+  }
+
+  .range-input:hover::-ms-track {
+    @apply bg-blue-600;
+  }
+}

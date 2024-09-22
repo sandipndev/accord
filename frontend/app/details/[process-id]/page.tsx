@@ -12,12 +12,16 @@ type Props = {
 const ProcessDetail: React.FC<Props> = ({ params }) => {
   const processId = params["process-id"]
 
-  const { data } = useGetProcessQuery({
+  const { data, loading: processLoading } = useGetProcessQuery({
     variables: {
       id: processId,
     },
     pollInterval: 1000,
   })
+  const [preloadingAudio, setPreloadingAudio] = useState(true)
+  const loading = processLoading && preloadingAudio
+
+  const [, setRenderCount] = useState(0)
 
   const [currentSemitone, setCurrentSemitone] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -45,8 +49,10 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
           audioRefs.current[semitone] = audio
         }
       })
+
+      setPreloadingAudio(true)
     }
-  }, [data, processId])
+  }, [data, processId, setPreloadingAudio])
 
   // Update currentTime when the audio is playing
   useEffect(() => {
@@ -95,6 +101,50 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
     }
   }
 
+  useEffect(() => {
+    const audioRefsCurrent = audioRefs.current
+    return () => {
+      Object.values(audioRefsCurrent).forEach((audio) => {
+        audio.pause()
+      })
+      setIsPlaying(false)
+    }
+  }, [])
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRefs.current[currentSemitone]
+    if (audio) {
+      const time = parseFloat(e.target.value)
+      audio.currentTime = time
+      setCurrentTime(time)
+    }
+  }
+
+  const handleDownload = () => {
+    const semitoneLabel =
+      currentSemitone >= 0 ? `+${currentSemitone}` : `${currentSemitone}`
+    const fileName =
+      currentSemitone === 0 ? `${processId}.mp3` : `${processId}_${semitoneLabel}_ST.mp3`
+    const fileUrl = `/media/${fileName}`
+
+    // Create a temporary anchor element to initiate download
+    const link = document.createElement("a")
+    link.href = fileUrl
+    link.download = `${data?.getProcess.name}_${semitoneLabel}.mp3`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  useEffect(() => {
+    const i = setInterval(() => {
+      setRenderCount((prev) => (prev + 1) % 100)
+    }, 1000)
+    return () => clearInterval(i)
+  }, [])
+
+  if (loading) return <div>Loading...</div>
+
   if (data?.getProcess.status !== "DONE")
     return (
       <>
@@ -106,25 +156,34 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
       </>
     )
 
+  const playingAudio = audioRefs.current[currentSemitone]
+  const playTime = (playingAudio && playingAudio.currentTime) || 0
+  const duration = (playingAudio && playingAudio.duration) || 0
+
   return (
     <div>
-      <div className="text-xl">{data?.getProcess.name}</div>
+      <div className="text-xl font-bold">{data?.getProcess.name}</div>
+      <div className="text-sm text-cyan-500">{data?.getProcess.youtubeUrl}</div>
+      <hr className="mt-6 border-zinc-700" />
       <div className="mt-4">
         <div>
-          <strong>Current Semitone: {currentSemitone}</strong>
+          <strong className="font-bold text-xl">
+            Current Semitone:{" "}
+            {currentSemitone > 0 ? `+${currentSemitone}` : currentSemitone}
+          </strong>
         </div>
         <div className="my-4">
           <button
             onClick={() => changeSemitone(-1)}
             disabled={currentSemitone <= -10}
-            className="px-4 py-2 mr-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="px-4 py-2 mr-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-50"
           >
             -
           </button>
           <button
             onClick={() => changeSemitone(1)}
             disabled={currentSemitone >= 10}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-50"
           >
             +
           </button>
@@ -132,9 +191,31 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
         <div>
           <button
             onClick={handlePlayPause}
-            className="px-4 py-2 bg-green-500 text-white rounded"
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
           >
             {isPlaying ? "Pause" : "Play"}
+          </button>
+        </div>
+        <div className="mt-8">
+          <input
+            type="range"
+            min="0"
+            max={duration}
+            value={playTime}
+            onChange={handleSeek}
+            className="w-full range-input"
+          />
+          <div className="flex justify-between text-sm">
+            <span>{formatTime(playTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
+        <div className="mt-8">
+          <button
+            className="px-4 py-2 bg-slate-500 text-white rounded"
+            onClick={handleDownload}
+          >
+            Download
           </button>
         </div>
       </div>
@@ -143,3 +224,11 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
 }
 
 export default ProcessDetail
+
+// Format time in mm:ss
+const formatTime = (time: number) => {
+  if (isNaN(time)) return "0:00"
+  const minutes = Math.floor(time / 60)
+  const seconds = Math.floor(time % 60)
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+}

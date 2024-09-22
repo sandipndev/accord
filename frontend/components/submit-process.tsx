@@ -18,6 +18,7 @@ gql`
     getProcess(id: $id) {
       id
       name
+      youtubeUrl
       status
     }
   }

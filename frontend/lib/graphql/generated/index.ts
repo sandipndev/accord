@@ -77,7 +77,7 @@ export type GetProcessQueryVariables = Exact<{
 }>;
 
 
-export type GetProcessQuery = { __typename?: 'Query', getProcess: { __typename?: 'Process', id: any, name: string, status: ProcessStatus } };
+export type GetProcessQuery = { __typename?: 'Query', getProcess: { __typename?: 'Process', id: any, name: string, youtubeUrl: string, status: ProcessStatus } };
 
 
 export const AllProcessesDocument = gql`
@@ -157,6 +157,7 @@ export const GetProcessDocument = gql`
   getProcess(id: $id) {
     id
     name
+    youtubeUrl
     status
   }
 }
