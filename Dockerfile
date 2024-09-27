@@ -31,10 +31,9 @@ FROM nixpkgs/nix-flakes:latest
   WORKDIR /accorde
   ENV ACCORDE_HOME /accorde
 
-  RUN mkdir -p /.pm2
-  
-  RUN chown -R 1000 /accorde && chmod -R u+w /accorde
-  RUN chown -R 1000 /.pm2 && chmod -R u+w /.pm2
+  RUN mkdir -p /.pm2 && mkdir -p /accorde \
+      && chown -R 1000 /accorde /.pm2 \
+      && chmod -R u+w /accorde /.pm2
   USER 1000
 
   ENV ENV production
