@@ -43,7 +43,6 @@ Update State
 
 #### Docker Compose to run this directly
 ```
-version: "4"
 services:
   server-pg:
     image: postgres:15.5

@@ -6,7 +6,7 @@ clean-deps:
 	docker compose down
 
 start-deps:
-	docker compose up -d integration-deps
+	docker compose up -d deps
 
 setup-db:
 	cd server && cargo sqlx migrate run --ignore-missing
