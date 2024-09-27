@@ -1,5 +1,5 @@
 ## Accorde
-A simple web app that splits a youtube karoke video into multiple semitones.
+A simple web app that splits a youtube karoke video into multiple semitones
 
 #### Process
 
@@ -46,23 +46,14 @@ Update State
 version: "4"
 services:
   server-pg:
-    image: postgres:16.4
-    ports:
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=pg
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    image: postgres:15.5
+    ports: [ 5433:5432 ]
+    environment: [ POSTGRES_USER=user, POSTGRES_PASSWORD=password, POSTGRES_DB=pg ]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready"], interval: 5s, timeout: 30s, retries: 5 }
+
   accorde:
     image: sandipndev/accorde
-    ports:
-      - "9099:3000"
-    depends_on:
-      - server-pg
-    environment:
-      - PG_CON=postgresql://user:password@server-pg:5432/pg
+    ports: [ 3000:3000 ]
+    links: [ server-pg ]
+    environment: [ PG_CON=postgresql://user:password@server-pg:5432/pg ]
 ```
