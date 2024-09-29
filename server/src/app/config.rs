@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::process::ProcessConfig;
+use crate::tracks::TracksConfig;
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub struct AppConfig {
-    pub process: ProcessConfig,
+    pub tracks: TracksConfig,
 }

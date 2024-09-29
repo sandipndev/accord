@@ -32,7 +32,7 @@ pub async fn run() -> anyhow::Result<()> {
         .expect("home is not an absolute path")
         .to_string_lossy()
         .into_owned();
-    config.app.process.home_absolute_path = absolute_path.clone();
+    config.app.tracks.home_absolute_path = absolute_path.clone();
     config.server.home_absolute_path = absolute_path;
 
     run_cmd(&cli.accorde_home, config).await?;
@@ -50,7 +50,10 @@ async fn run_cmd(accorde_home: &str, config: Config) -> anyhow::Result<()> {
     let _runner = crate::job::start_job_runner(&pool, app.clone())
         .await
         .context("job runner error");
-    app.processes().spawn_all_pending_jobs().await?;
+
+    app.tracks()
+        .spawn_all_pending_semitone_conversion_jobs()
+        .await?;
 
     crate::server::run(config.server, app).await?;
     Ok(())

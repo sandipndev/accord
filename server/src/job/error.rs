@@ -8,8 +8,8 @@ pub enum JobError {
     Sqlx(#[from] sqlx::Error),
     #[error("JobError - JsonError: {0}")]
     JsonError(#[from] serde_json::Error),
-    #[error("JobError - ProcessError: {0}")]
-    ProcessError(#[from] crate::process::ProcessError),
+    #[error("JobError - TrackError: {0}")]
+    TrackError(#[from] crate::tracks::TrackError),
 }
 
 impl JobExecutionError for JobError {}

@@ -1,24 +1,28 @@
 use async_graphql::*;
 
-use crate::{app::AccordeApp, primitives::ProcessId, process::NewProcess};
+use crate::{
+    app::AccordeApp,
+    primitives::{TrackId, YoutubeUrl},
+    tracks::NewTrack,
+};
 
-use super::process::Process;
+use super::track::Track;
 
 #[derive(Default)]
 pub struct CoreQuery {}
 
 #[Object(name = "Query")]
 impl CoreQuery {
-    async fn get_process(&self, ctx: &Context<'_>, id: ProcessId) -> Result<Process> {
+    async fn track(&self, ctx: &Context<'_>, track_id: TrackId) -> Result<Track> {
         let app = ctx.data_unchecked::<AccordeApp>();
-        let process = app.processes().get(id).await?;
-        Ok(process.into())
+        let track = app.tracks().get_by_id(track_id).await?;
+        Ok(track.into())
     }
 
-    async fn get_processes(&self, ctx: &Context<'_>) -> Result<Vec<Process>> {
+    async fn tracks(&self, ctx: &Context<'_>) -> Result<Vec<Track>> {
         let app = ctx.data_unchecked::<AccordeApp>();
-        let processes = app.processes().get_all().await?;
-        Ok(processes.into_iter().map(Into::into).collect())
+        let tracks = app.tracks().get_all().await?;
+        Ok(tracks.into_iter().map(Into::into).collect())
     }
 }
 
@@ -27,27 +31,12 @@ pub struct CoreMutation {}
 
 #[Object(name = "Mutation")]
 impl CoreMutation {
-    async fn create_process(&self, ctx: &Context<'_>, youtube_url: String) -> Result<ProcessId> {
+    async fn create_track(&self, ctx: &Context<'_>, youtube_url: YoutubeUrl) -> Result<Track> {
         let app = ctx.data_unchecked::<AccordeApp>();
 
-        let youtube_url = url::Url::parse(&youtube_url)?;
-        match youtube_url.host_str() {
-            Some("www.youtube.com") | Some("youtube.com") | Some("youtu.be") => {}
-            _ => return Err("Invalid youtube URL".into()),
-        }
+        let new_track = NewTrack { youtube_url };
+        let track = app.tracks().create(new_track).await?;
 
-        let metadata = app.processes().get_metadata(youtube_url.as_str()).await?;
-
-        if metadata.duration_s > 1200 {
-            return Err("Video is too long".into());
-        }
-
-        let new_process = NewProcess {
-            youtube_url,
-            name: metadata.title,
-        };
-        let process = app.processes().create(new_process).await?;
-
-        Ok(process.id)
+        Ok(track.into())
     }
 }
