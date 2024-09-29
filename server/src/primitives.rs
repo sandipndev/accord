@@ -14,7 +14,7 @@ scalar!(SemitoneId);
 pub enum SemitoneStatus {
     Pending,
     Processing,
-    Done,
+    Completed,
 }
 
 #[derive(Clone, Serialize, Deserialize)]

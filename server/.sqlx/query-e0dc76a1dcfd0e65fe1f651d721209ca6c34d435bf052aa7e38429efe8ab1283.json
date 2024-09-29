@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE tracks SET downloading = TRUE WHERE id = $1 AND downloading = FALSE",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e0dc76a1dcfd0e65fe1f651d721209ca6c34d435bf052aa7e38429efe8ab1283"
+}

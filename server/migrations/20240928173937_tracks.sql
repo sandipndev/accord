@@ -8,7 +8,7 @@ CREATE TABLE tracks (
 CREATE TYPE semitone_status AS ENUM (
   'PENDING',
   'PROCESSING',
-  'DONE'
+  'COMPLETED'
 );
 
 CREATE TABLE semitones (
@@ -16,5 +16,6 @@ CREATE TABLE semitones (
     track_id UUID NOT NULL REFERENCES tracks(id),
     shift INT NOT NULL,
     status semitone_status NOT NULL DEFAULT 'PENDING',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

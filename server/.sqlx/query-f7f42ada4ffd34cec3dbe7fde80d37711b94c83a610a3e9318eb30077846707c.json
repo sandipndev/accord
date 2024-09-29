@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO semitones(id, track_id, shift)\n            VALUES ($1, $2, $3)\n            RETURNING id, track_id, shift, status AS \"status!: SemitoneStatus\", created_at\n            ",
+  "query": "\n            SELECT id, track_id, shift, status AS \"status!: SemitoneStatus\", created_at\n            FROM semitones\n            WHERE id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -42,9 +42,7 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid",
-        "Uuid",
-        "Int4"
+        "Uuid"
       ]
     },
     "nullable": [
@@ -55,5 +53,5 @@
       false
     ]
   },
-  "hash": "5c1367b6f84248867807f3e14906f41e6ac0b946b0fe52e4de7fbd4d7754314c"
+  "hash": "f7f42ada4ffd34cec3dbe7fde80d37711b94c83a610a3e9318eb30077846707c"
 }

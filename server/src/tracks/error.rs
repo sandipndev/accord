@@ -6,8 +6,8 @@ pub enum TrackError {
     Sqlx(#[from] sqlx::Error),
     #[error("TrackError - CommandError: {0}")]
     CommandError(#[from] crate::commands::error::CommandError),
-    #[error("CouldNotSpawnConversionJob")]
-    CouldNotSpawnConversionJob,
+    #[error("CouldNotSpawnJob")]
+    CouldNotSpawnJob,
     #[error("ExceedsTimeLimit")]
     ExceedsTimeLimit,
     #[error("InvalidYoutubeURL")]

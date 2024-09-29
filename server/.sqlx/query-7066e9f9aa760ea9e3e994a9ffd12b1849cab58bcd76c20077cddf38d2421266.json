@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE semitones\n            SET status = $1, updated_at = now()\n            WHERE id = $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "semitone_status",
+            "kind": {
+              "Enum": [
+                "PENDING",
+                "PROCESSING",
+                "COMPLETED"
+              ]
+            }
+          }
+        },
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7066e9f9aa760ea9e3e994a9ffd12b1849cab58bcd76c20077cddf38d2421266"
+}

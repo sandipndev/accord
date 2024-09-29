@@ -6,13 +6,16 @@ use executor::{JobExecutionError, JobExecutor};
 
 use sqlxmq::{job, CurrentJob, JobRegistry, JobRunnerHandle};
 
-use crate::{app::AccordeApp, primitives::SemitoneId};
+use crate::{
+    app::AccordeApp,
+    primitives::{SemitoneId, TrackId},
+};
 
 pub async fn start_job_runner(
     pool: &sqlx::PgPool,
     app: AccordeApp,
 ) -> Result<JobRunnerHandle, JobError> {
-    let mut registry = JobRegistry::new(&[semitone_conversion_job]);
+    let mut registry = JobRegistry::new(&[download_job, semitone_conversion_job]);
 
     registry.set_context(app);
 
@@ -25,17 +28,49 @@ pub async fn start_job_runner(
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct JobData {
+struct DownloadJobData {
+    pub track_id: TrackId,
+}
+
+#[job(name = "download_job")]
+async fn download_job(mut current_job: CurrentJob, app: AccordeApp) -> Result<(), JobError> {
+    let job_data: DownloadJobData = current_job.json()?.expect("couldn't parse json");
+    let track_id = job_data.track_id;
+
+    JobExecutor::builder(&mut current_job)
+        .build()
+        .expect("couldn't build JobExecutor")
+        .execute(|_| async move {
+            match app.tracks().download(track_id).await {
+                Ok(_) => Ok(()),
+                Err(e) => Err(JobError::from(e)),
+            }
+        })
+        .await?;
+    Ok(())
+}
+
+pub async fn spawn_download_job(pool: &sqlx::PgPool, track_id: TrackId) -> Result<(), JobError> {
+    let json = DownloadJobData { track_id };
+    match download_job.builder().set_json(&json)?.spawn(pool).await {
+        Err(sqlx::Error::Database(err)) if err.message().contains("duplicate key") => Ok(()),
+        Err(e) => Err(e.into()),
+        Ok(_) => Ok(()),
+    }
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct SemitoneConversionJobData {
     pub semitone_id: SemitoneId,
 }
 
-#[job(name = "semitone_conversion")]
+#[job(name = "semitone_conversion_job")]
 async fn semitone_conversion_job(
     mut current_job: CurrentJob,
     app: AccordeApp,
 ) -> Result<(), JobError> {
-    let process_data: JobData = current_job.json()?.expect("couldn't parse json");
-    let semitone_id = process_data.semitone_id;
+    let job_data: SemitoneConversionJobData = current_job.json()?.expect("couldn't parse json");
+    let semitone_id = job_data.semitone_id;
 
     JobExecutor::builder(&mut current_job)
         .build()
@@ -54,7 +89,7 @@ pub async fn spawn_semitone_conversion_job(
     pool: &sqlx::PgPool,
     semitone_id: SemitoneId,
 ) -> Result<(), JobError> {
-    let json = JobData { semitone_id };
+    let json = SemitoneConversionJobData { semitone_id };
     match semitone_conversion_job
         .builder()
         .set_json(&json)?

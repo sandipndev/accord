@@ -45,7 +45,7 @@ impl SemitonesRepo {
             SELECT id, track_id, shift, status AS "status!: SemitoneStatus", created_at
             FROM semitones
             WHERE track_id = $1
-"#,
+            "#,
             uuid::Uuid::from(track_id)
         )
         .fetch_all(&self.pool)
@@ -63,14 +63,66 @@ impl SemitonesRepo {
             .collect())
     }
 
-    pub async fn get_all_pending_semitone_ids(&self) -> Result<Vec<SemitoneId>, TrackError> {
-        let query = sqlx::query!(r#"SELECT id FROM semitones WHERE status = 'PENDING'"#)
-            .fetch_all(&self.pool)
-            .await?;
+    pub async fn get_all_pending_semitones(&self) -> Result<Vec<Semitone>, TrackError> {
+        let query = sqlx::query!(
+            r#"
+            SELECT id, track_id, shift, status AS "status!: SemitoneStatus", created_at
+            FROM semitones
+            WHERE status = 'PENDING'"#
+        )
+        .fetch_all(&self.pool)
+        .await?;
 
         Ok(query
             .into_iter()
-            .map(|data| SemitoneId::from(data.id))
+            .map(|data| Semitone {
+                id: SemitoneId::from(data.id),
+                track_id: TrackId::from(data.track_id),
+                shift: data.shift,
+                status: data.status,
+                created_at: data.created_at,
+            })
             .collect())
+    }
+
+    pub async fn get_by_id(&self, semitone_id: SemitoneId) -> Result<Semitone, TrackError> {
+        let query = sqlx::query!(
+            r#"
+            SELECT id, track_id, shift, status AS "status!: SemitoneStatus", created_at
+            FROM semitones
+            WHERE id = $1
+            "#,
+            uuid::Uuid::from(semitone_id)
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(Semitone {
+            id: SemitoneId::from(query.id),
+            track_id: TrackId::from(query.track_id),
+            shift: query.shift,
+            status: query.status,
+            created_at: query.created_at,
+        })
+    }
+
+    pub async fn update_status(
+        &self,
+        semitone_id: SemitoneId,
+        status: SemitoneStatus,
+    ) -> Result<(), TrackError> {
+        sqlx::query!(
+            r#"
+            UPDATE semitones
+            SET status = $1, updated_at = now()
+            WHERE id = $2
+            "#,
+            status as SemitoneStatus,
+            uuid::Uuid::from(semitone_id)
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
     }
 }

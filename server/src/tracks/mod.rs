@@ -27,9 +27,9 @@ pub struct Tracks {
 impl Tracks {
     pub fn new(pool: &PgPool, config: TracksConfig) -> Self {
         Self {
-            config,
+            config: config.clone(),
             repo: TracksRepo::new(pool),
-            semitones: Semitones::new(pool),
+            semitones: Semitones::new(pool, config),
         }
     }
 
@@ -46,6 +46,9 @@ impl Tracks {
         let track = self.repo.create(new_track).await?;
 
         for shift in self.config.shift_min..self.config.shift_max {
+            if shift == 0 {
+                continue;
+            }
             self.semitones
                 .create(NewSemitone {
                     track_id: track.id,
@@ -53,6 +56,10 @@ impl Tracks {
                 })
                 .await?;
         }
+
+        crate::job::spawn_download_job(&self.semitones.pool, track.id)
+            .await
+            .map_err(|_| TrackError::CouldNotSpawnJob)?;
 
         Ok(track)
     }
@@ -63,6 +70,31 @@ impl Tracks {
 
     pub async fn get_all(&self) -> Result<Vec<Track>, TrackError> {
         self.repo.get_all().await
+    }
+
+    pub async fn download(&self, track_id: TrackId) -> Result<(), TrackError> {
+        let track = self.repo.get_by_id(track_id).await?;
+
+        crate::commands::download::download_track(
+            track.id,
+            track.youtube_url,
+            &self.config.home_absolute_path,
+        )
+        .await?;
+
+        self.spawn_conversion_jobs_for(track_id).await?;
+
+        Ok(())
+    }
+
+    pub async fn spawn_conversion_jobs_for(&self, track_id: TrackId) -> Result<(), TrackError> {
+        let semitones = self.semitones.get_by_track_id(track_id).await?;
+        for semitone in semitones {
+            crate::job::spawn_semitone_conversion_job(&self.semitones.pool, semitone.id)
+                .await
+                .map_err(|_| TrackError::CouldNotSpawnJob)?;
+        }
+        Ok(())
     }
 }
 
