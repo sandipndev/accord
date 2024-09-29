@@ -1,6 +1,7 @@
 "use client"
 
-import { useTrackQuery } from "@/lib/graphql/generated"
+import { Track } from "@/components/track"
+import { SemitoneStatus, useTrackQuery } from "@/lib/graphql/generated"
 import { useEffect, useState, useRef } from "react"
 
 type Props = {
@@ -12,14 +13,14 @@ type Props = {
 const TrackDetail: React.FC<Props> = ({ params }) => {
   const trackId = params["track-id"]
 
-  const { data, loading: processLoading } = useTrackQuery({
+  const { data, loading: trackLoading } = useTrackQuery({
     variables: {
       trackId,
     },
     pollInterval: 1000,
   })
   const [preloadingAudio, setPreloadingAudio] = useState(true)
-  const loading = processLoading && preloadingAudio
+  const loading = trackLoading && preloadingAudio
 
   const [, setRenderCount] = useState(0)
 
@@ -30,9 +31,13 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
   const [isSeeking, setIsSeeking] = useState(false)
   const audioRefs = useRef<{ [key: number]: HTMLAudioElement }>({})
 
+  const allSemitoneConversionsComplete = data?.track.semitones.every(
+    ({ status }) => status === SemitoneStatus.Completed,
+  )
+
   // Preload all audio files once data is available
   useEffect(() => {
-    if (data?.getProcess.status === "DONE") {
+    if (allSemitoneConversionsComplete) {
       const semitoneShifts = []
       for (let i = -10; i <= 10; i++) {
         semitoneShifts.push(i)
@@ -41,7 +46,7 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
       semitoneShifts.forEach((semitone) => {
         const semitoneLabel = semitone >= 0 ? `+${semitone}` : `${semitone}`
         const fileName =
-          semitone === 0 ? `${processId}.mp3` : `${processId}_${semitoneLabel}_ST.mp3`
+          semitone === 0 ? `${trackId}.mp3` : `${trackId}_${semitoneLabel}_ST.mp3`
         const fileUrl = `/media/${fileName}`
 
         const audio = new Audio(fileUrl)
@@ -50,7 +55,7 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
 
       setPreloadingAudio(false)
     }
-  }, [data, processId])
+  }, [allSemitoneConversionsComplete, data, trackId])
 
   // Update currentTime when the audio is playing
   useEffect(() => {
@@ -145,13 +150,13 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
     const semitoneLabel =
       currentSemitone >= 0 ? `+${currentSemitone}` : `${currentSemitone}`
     const fileName =
-      currentSemitone === 0 ? `${processId}.mp3` : `${processId}_${semitoneLabel}_ST.mp3`
+      currentSemitone === 0 ? `${trackId}.mp3` : `${trackId}_${semitoneLabel}_ST.mp3`
     const fileUrl = `/media/${fileName}`
 
     // Create a temporary anchor element to initiate download
     const link = document.createElement("a")
     link.href = fileUrl
-    link.download = `${data?.getProcess.name}_${semitoneLabel}.mp3`
+    link.download = `${data?.track.name}_${semitoneLabel}.mp3`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -166,25 +171,21 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
 
   if (loading) return <div>Loading...</div>
 
-  if (data?.getProcess.status !== "DONE")
-    return (
-      <>
-        <div className="">{data?.getProcess.name}</div>
-        <div>
-          Still Processing...
-          <br /> Current State: <span>{data?.getProcess.status}</span>
-        </div>
-      </>
-    )
+  if (!allSemitoneConversionsComplete && data?.track) return <Track track={data?.track} />
 
   const playingAudio = audioRefs.current[currentSemitone]
   const playTime = (playingAudio && playingAudio.currentTime) || seekTime
   const duration = (playingAudio && playingAudio.duration) || 0
 
+  const minSemitoneAvailable =
+    data?.track.semitones.reduce((min, { shift }) => Math.min(min, shift), 0) || -6
+  const maxSemitoneAvailable =
+    data?.track.semitones.reduce((max, { shift }) => Math.max(max, shift), 0) || 4
+
   return (
     <div>
-      <div className="text-xl font-bold">{data?.getProcess.name}</div>
-      <div className="text-sm text-cyan-500">{data?.getProcess.youtubeUrl}</div>
+      <div className="text-xl font-bold">{data?.track.name}</div>
+      <div className="text-sm text-cyan-500">{data?.track.youtubeUrl}</div>
       <hr className="mt-6 border-zinc-700" />
       <div className="mt-4">
         <div>
@@ -196,14 +197,14 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
         <div className="my-4">
           <button
             onClick={() => changeSemitone(-1)}
-            disabled={currentSemitone <= -10}
+            disabled={currentSemitone <= minSemitoneAvailable}
             className="px-4 py-2 mr-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-50"
           >
             -
           </button>
           <button
             onClick={() => changeSemitone(1)}
-            disabled={currentSemitone >= 10}
+            disabled={currentSemitone >= maxSemitoneAvailable}
             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-50"
           >
             +

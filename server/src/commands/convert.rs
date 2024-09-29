@@ -21,6 +21,7 @@ pub async fn shift_pitch_of_track_by(
             shift.to_string()
         }
     );
+
     let status = Command::new("ffmpeg")
         .arg("-y") // Overwrite output files without asking
         .arg("-i")

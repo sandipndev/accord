@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, name, youtube_url, created_at\n            FROM tracks\n        ",
+  "query": "\n            SELECT id, name, youtube_url, created_at\n            FROM tracks\n            ORDER BY created_at DESC\n        ",
   "describe": {
     "columns": [
       {
@@ -34,5 +34,5 @@
       false
     ]
   },
-  "hash": "32e011d54283d9630e47d497c844144b402f5c451313ee837d0b5b788c3794e3"
+  "hash": "c90367065944c03f9d5e185c846347949f13c0dd3a44f7590aa540fe487e2066"
 }

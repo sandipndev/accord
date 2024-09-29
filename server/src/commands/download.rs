@@ -12,7 +12,7 @@ pub async fn download_track(
     let download_file_at = format!("{}/{}.mp3", home_absolute_path, track_id);
 
     let status = Command::new("yt-dlp")
-        .arg("-x")
+        .arg("-xk")
         .arg("--audio-format")
         .arg("mp3")
         .arg("-o")

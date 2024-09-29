@@ -54,7 +54,7 @@ export type Semitone = {
 };
 
 export enum SemitoneStatus {
-  Done = 'DONE',
+  Completed = 'COMPLETED',
   Pending = 'PENDING',
   Processing = 'PROCESSING'
 }

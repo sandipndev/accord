@@ -51,7 +51,7 @@ export const AllTracks = () => {
                 <td className="px-6 py-4">{track.name}</td>
                 <td className="px-6 py-4">
                   {formatStatus(
-                    track.semitones.every(({ status }) => status === "DONE")
+                    track.semitones.every(({ status }) => status === "COMPLETED")
                       ? "Done"
                       : "Processing",
                   )}

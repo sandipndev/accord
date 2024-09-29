@@ -61,6 +61,7 @@ impl TracksRepo {
             r#"
             SELECT id, name, youtube_url, created_at
             FROM tracks
+            ORDER BY created_at DESC
         "#,
         )
         .fetch_all(&self.pool)
