@@ -1,20 +1,20 @@
 "use client"
 
-import { useGetProcessQuery } from "@/lib/graphql/generated"
+import { useTrackQuery } from "@/lib/graphql/generated"
 import { useEffect, useState, useRef } from "react"
 
 type Props = {
   params: {
-    "process-id": string
+    "track-id": string
   }
 }
 
-const ProcessDetail: React.FC<Props> = ({ params }) => {
-  const processId = params["process-id"]
+const TrackDetail: React.FC<Props> = ({ params }) => {
+  const trackId = params["track-id"]
 
-  const { data, loading: processLoading } = useGetProcessQuery({
+  const { data, loading: processLoading } = useTrackQuery({
     variables: {
-      id: processId,
+      trackId,
     },
     pollInterval: 1000,
   })
@@ -246,7 +246,7 @@ const ProcessDetail: React.FC<Props> = ({ params }) => {
   )
 }
 
-export default ProcessDetail
+export default TrackDetail
 
 // Format time in mm:ss
 const formatTime = (time: number) => {

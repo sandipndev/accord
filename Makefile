@@ -16,5 +16,5 @@ reset-deps: clean-deps start-deps setup-db
 run-server:
 	SQLX_OFFLINE=true cargo run --bin accorde-server
 
-run-client:
+run-frontend:
 	cd frontend && pnpm run dev

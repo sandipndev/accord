@@ -18,180 +18,203 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   DateTime: { input: any; output: any; }
-  ProcessId: { input: any; output: any; }
+  SemitoneId: { input: any; output: any; }
+  TrackId: { input: any; output: any; }
+  YoutubeUrl: { input: string; output: string; }
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createProcess: Scalars['ProcessId']['output'];
+  createTrack: Track;
 };
 
 
-export type MutationCreateProcessArgs = {
-  youtubeUrl: Scalars['String']['input'];
+export type MutationCreateTrackArgs = {
+  youtubeUrl: Scalars['YoutubeUrl']['input'];
 };
-
-export type Process = {
-  __typename?: 'Process';
-  createdAt: Scalars['DateTime']['output'];
-  id: Scalars['ProcessId']['output'];
-  name: Scalars['String']['output'];
-  status: ProcessStatus;
-  youtubeUrl: Scalars['String']['output'];
-};
-
-export enum ProcessStatus {
-  Converted = 'CONVERTED',
-  Converting = 'CONVERTING',
-  Done = 'DONE',
-  Downloaded = 'DOWNLOADED',
-  Downloading = 'DOWNLOADING',
-  Pending = 'PENDING'
-}
 
 export type Query = {
   __typename?: 'Query';
-  getProcess: Process;
-  getProcesses: Array<Process>;
+  track: Track;
+  tracks: Array<Track>;
 };
 
 
-export type QueryGetProcessArgs = {
-  id: Scalars['ProcessId']['input'];
+export type QueryTrackArgs = {
+  trackId: Scalars['TrackId']['input'];
 };
 
-export type AllProcessesQueryVariables = Exact<{ [key: string]: never; }>;
+export type Semitone = {
+  __typename?: 'Semitone';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['SemitoneId']['output'];
+  shift: Scalars['Int']['output'];
+  status: SemitoneStatus;
+  trackId: Scalars['TrackId']['output'];
+};
+
+export enum SemitoneStatus {
+  Done = 'DONE',
+  Pending = 'PENDING',
+  Processing = 'PROCESSING'
+}
+
+export type Track = {
+  __typename?: 'Track';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['TrackId']['output'];
+  name: Scalars['String']['output'];
+  semitones: Array<Semitone>;
+  youtubeUrl: Scalars['YoutubeUrl']['output'];
+};
+
+export type TracksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AllProcessesQuery = { __typename?: 'Query', getProcesses: Array<{ __typename?: 'Process', id: any, name: string, status: ProcessStatus }> };
+export type TracksQuery = { __typename?: 'Query', tracks: Array<{ __typename?: 'Track', id: any, name: string, youtubeUrl: string, createdAt: any, semitones: Array<{ __typename?: 'Semitone', id: any, shift: number, status: SemitoneStatus, createdAt: any }> }> };
 
-export type CreateProcessMutationVariables = Exact<{
-  youtubeUrl: Scalars['String']['input'];
+export type CreateTrackMutationVariables = Exact<{
+  youtubeUrl: Scalars['YoutubeUrl']['input'];
 }>;
 
 
-export type CreateProcessMutation = { __typename?: 'Mutation', createProcess: any };
+export type CreateTrackMutation = { __typename?: 'Mutation', createTrack: { __typename?: 'Track', id: any } };
 
-export type GetProcessQueryVariables = Exact<{
-  id: Scalars['ProcessId']['input'];
+export type TrackQueryVariables = Exact<{
+  trackId: Scalars['TrackId']['input'];
 }>;
 
 
-export type GetProcessQuery = { __typename?: 'Query', getProcess: { __typename?: 'Process', id: any, name: string, youtubeUrl: string, status: ProcessStatus } };
+export type TrackQuery = { __typename?: 'Query', track: { __typename?: 'Track', id: any, name: string, youtubeUrl: string, createdAt: any, semitones: Array<{ __typename?: 'Semitone', id: any, shift: number, status: SemitoneStatus, createdAt: any }> } };
 
 
-export const AllProcessesDocument = gql`
-    query AllProcesses {
-  getProcesses {
+export const TracksDocument = gql`
+    query Tracks {
+  tracks {
     id
     name
-    status
+    youtubeUrl
+    createdAt
+    semitones {
+      id
+      shift
+      status
+      createdAt
+    }
   }
 }
     `;
 
 /**
- * __useAllProcessesQuery__
+ * __useTracksQuery__
  *
- * To run a query within a React component, call `useAllProcessesQuery` and pass it any options that fit your needs.
- * When your component renders, `useAllProcessesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useTracksQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTracksQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useAllProcessesQuery({
+ * const { data, loading, error } = useTracksQuery({
  *   variables: {
  *   },
  * });
  */
-export function useAllProcessesQuery(baseOptions?: Apollo.QueryHookOptions<AllProcessesQuery, AllProcessesQueryVariables>) {
+export function useTracksQuery(baseOptions?: Apollo.QueryHookOptions<TracksQuery, TracksQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<AllProcessesQuery, AllProcessesQueryVariables>(AllProcessesDocument, options);
+        return Apollo.useQuery<TracksQuery, TracksQueryVariables>(TracksDocument, options);
       }
-export function useAllProcessesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AllProcessesQuery, AllProcessesQueryVariables>) {
+export function useTracksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TracksQuery, TracksQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<AllProcessesQuery, AllProcessesQueryVariables>(AllProcessesDocument, options);
+          return Apollo.useLazyQuery<TracksQuery, TracksQueryVariables>(TracksDocument, options);
         }
-export function useAllProcessesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<AllProcessesQuery, AllProcessesQueryVariables>) {
+export function useTracksSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TracksQuery, TracksQueryVariables>) {
           const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<AllProcessesQuery, AllProcessesQueryVariables>(AllProcessesDocument, options);
+          return Apollo.useSuspenseQuery<TracksQuery, TracksQueryVariables>(TracksDocument, options);
         }
-export type AllProcessesQueryHookResult = ReturnType<typeof useAllProcessesQuery>;
-export type AllProcessesLazyQueryHookResult = ReturnType<typeof useAllProcessesLazyQuery>;
-export type AllProcessesSuspenseQueryHookResult = ReturnType<typeof useAllProcessesSuspenseQuery>;
-export type AllProcessesQueryResult = Apollo.QueryResult<AllProcessesQuery, AllProcessesQueryVariables>;
-export const CreateProcessDocument = gql`
-    mutation CreateProcess($youtubeUrl: String!) {
-  createProcess(youtubeUrl: $youtubeUrl)
+export type TracksQueryHookResult = ReturnType<typeof useTracksQuery>;
+export type TracksLazyQueryHookResult = ReturnType<typeof useTracksLazyQuery>;
+export type TracksSuspenseQueryHookResult = ReturnType<typeof useTracksSuspenseQuery>;
+export type TracksQueryResult = Apollo.QueryResult<TracksQuery, TracksQueryVariables>;
+export const CreateTrackDocument = gql`
+    mutation CreateTrack($youtubeUrl: YoutubeUrl!) {
+  createTrack(youtubeUrl: $youtubeUrl) {
+    id
+  }
 }
     `;
-export type CreateProcessMutationFn = Apollo.MutationFunction<CreateProcessMutation, CreateProcessMutationVariables>;
+export type CreateTrackMutationFn = Apollo.MutationFunction<CreateTrackMutation, CreateTrackMutationVariables>;
 
 /**
- * __useCreateProcessMutation__
+ * __useCreateTrackMutation__
  *
- * To run a mutation, you first call `useCreateProcessMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateProcessMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateTrackMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateTrackMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createProcessMutation, { data, loading, error }] = useCreateProcessMutation({
+ * const [createTrackMutation, { data, loading, error }] = useCreateTrackMutation({
  *   variables: {
  *      youtubeUrl: // value for 'youtubeUrl'
  *   },
  * });
  */
-export function useCreateProcessMutation(baseOptions?: Apollo.MutationHookOptions<CreateProcessMutation, CreateProcessMutationVariables>) {
+export function useCreateTrackMutation(baseOptions?: Apollo.MutationHookOptions<CreateTrackMutation, CreateTrackMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateProcessMutation, CreateProcessMutationVariables>(CreateProcessDocument, options);
+        return Apollo.useMutation<CreateTrackMutation, CreateTrackMutationVariables>(CreateTrackDocument, options);
       }
-export type CreateProcessMutationHookResult = ReturnType<typeof useCreateProcessMutation>;
-export type CreateProcessMutationResult = Apollo.MutationResult<CreateProcessMutation>;
-export type CreateProcessMutationOptions = Apollo.BaseMutationOptions<CreateProcessMutation, CreateProcessMutationVariables>;
-export const GetProcessDocument = gql`
-    query GetProcess($id: ProcessId!) {
-  getProcess(id: $id) {
+export type CreateTrackMutationHookResult = ReturnType<typeof useCreateTrackMutation>;
+export type CreateTrackMutationResult = Apollo.MutationResult<CreateTrackMutation>;
+export type CreateTrackMutationOptions = Apollo.BaseMutationOptions<CreateTrackMutation, CreateTrackMutationVariables>;
+export const TrackDocument = gql`
+    query Track($trackId: TrackId!) {
+  track(trackId: $trackId) {
     id
     name
     youtubeUrl
-    status
+    createdAt
+    semitones {
+      id
+      shift
+      status
+      createdAt
+    }
   }
 }
     `;
 
 /**
- * __useGetProcessQuery__
+ * __useTrackQuery__
  *
- * To run a query within a React component, call `useGetProcessQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetProcessQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useTrackQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTrackQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetProcessQuery({
+ * const { data, loading, error } = useTrackQuery({
  *   variables: {
- *      id: // value for 'id'
+ *      trackId: // value for 'trackId'
  *   },
  * });
  */
-export function useGetProcessQuery(baseOptions: Apollo.QueryHookOptions<GetProcessQuery, GetProcessQueryVariables> & ({ variables: GetProcessQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useTrackQuery(baseOptions: Apollo.QueryHookOptions<TrackQuery, TrackQueryVariables> & ({ variables: TrackQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetProcessQuery, GetProcessQueryVariables>(GetProcessDocument, options);
+        return Apollo.useQuery<TrackQuery, TrackQueryVariables>(TrackDocument, options);
       }
-export function useGetProcessLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetProcessQuery, GetProcessQueryVariables>) {
+export function useTrackLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TrackQuery, TrackQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetProcessQuery, GetProcessQueryVariables>(GetProcessDocument, options);
+          return Apollo.useLazyQuery<TrackQuery, TrackQueryVariables>(TrackDocument, options);
         }
-export function useGetProcessSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetProcessQuery, GetProcessQueryVariables>) {
+export function useTrackSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TrackQuery, TrackQueryVariables>) {
           const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetProcessQuery, GetProcessQueryVariables>(GetProcessDocument, options);
+          return Apollo.useSuspenseQuery<TrackQuery, TrackQueryVariables>(TrackDocument, options);
         }
-export type GetProcessQueryHookResult = ReturnType<typeof useGetProcessQuery>;
-export type GetProcessLazyQueryHookResult = ReturnType<typeof useGetProcessLazyQuery>;
-export type GetProcessSuspenseQueryHookResult = ReturnType<typeof useGetProcessSuspenseQuery>;
-export type GetProcessQueryResult = Apollo.QueryResult<GetProcessQuery, GetProcessQueryVariables>;
+export type TrackQueryHookResult = ReturnType<typeof useTrackQuery>;
+export type TrackLazyQueryHookResult = ReturnType<typeof useTrackLazyQuery>;
+export type TrackSuspenseQueryHookResult = ReturnType<typeof useTrackSuspenseQuery>;
+export type TrackQueryResult = Apollo.QueryResult<TrackQuery, TrackQueryVariables>;

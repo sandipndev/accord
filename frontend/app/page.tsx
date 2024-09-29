@@ -1,11 +1,11 @@
-import { AllProcesses } from "@/components/all-processes"
-import { SubmitProcess } from "@/components/submit-process"
+import { AllTracks } from "@/components/all-tracks"
+import { SubmitTrack } from "@/components/submit-track"
 
 const Home: React.FC = () => {
   return (
     <>
-      <SubmitProcess />
-      <AllProcesses />
+      <SubmitTrack />
+      <AllTracks />
     </>
   )
 }

@@ -3,28 +3,35 @@
 "use client"
 import React from "react"
 import { gql } from "@apollo/client"
-import { useAllProcessesQuery } from "@/lib/graphql/generated"
+import { useTracksQuery } from "@/lib/graphql/generated"
 import { formatStatus } from "@/lib/utils"
 import Link from "next/link"
 
 gql`
-  query AllProcesses {
-    getProcesses {
+  query Tracks {
+    tracks {
       id
       name
-      status
+      youtubeUrl
+      createdAt
+      semitones {
+        id
+        shift
+        status
+        createdAt
+      }
     }
   }
 `
 
-export const AllProcesses = () => {
-  const { data } = useAllProcessesQuery({
+export const AllTracks = () => {
+  const { data } = useTracksQuery({
     pollInterval: 1000,
   })
 
   return (
     <details className="text-white mt-6" open>
-      <summary>All Processes</summary>
+      <summary>All Tracks</summary>
       <div className="mt-4 text-white">
         <table className="min-w-full p-6">
           <thead>
@@ -39,15 +46,18 @@ export const AllProcesses = () => {
             </tr>
           </thead>
           <tbody>
-            {data?.getProcesses.map((process) => (
-              <tr key={process.id} className="border-b border-zinc-600">
-                <td className="px-6 py-4">{process.name}</td>
-                <td className="px-6 py-4">{formatStatus(process.status)}</td>
+            {data?.tracks.map((track) => (
+              <tr key={track.id} className="border-b border-zinc-600">
+                <td className="px-6 py-4">{track.name}</td>
+                <td className="px-6 py-4">
+                  {formatStatus(
+                    track.semitones.every(({ status }) => status === "DONE")
+                      ? "Done"
+                      : "Processing",
+                  )}
+                </td>
                 <td>
-                  <Link
-                    href={`/details/${process.id}`}
-                    className="p-2 bg-gray-500 rounded"
-                  >
+                  <Link href={`/track/${track.id}`} className="p-2 bg-gray-500 rounded">
                     View
                   </Link>
                 </td>

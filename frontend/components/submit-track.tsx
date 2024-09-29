@@ -3,47 +3,52 @@
 "use client"
 import { useState } from "react"
 
-import { useCreateProcessMutation, useGetProcessLazyQuery } from "@/lib/graphql/generated"
+import { useCreateTrackMutation, useTrackLazyQuery } from "@/lib/graphql/generated"
 import { gql } from "@apollo/client"
 import { formatStatus } from "@/lib/utils"
 import { Loading } from "./loading"
 import Link from "next/link"
 
 gql`
-  mutation CreateProcess($youtubeUrl: String!) {
-    createProcess(youtubeUrl: $youtubeUrl)
+  mutation CreateTrack($youtubeUrl: YoutubeUrl!) {
+    createTrack(youtubeUrl: $youtubeUrl) {
+      id
+    }
   }
 
-  query GetProcess($id: ProcessId!) {
-    getProcess(id: $id) {
+  query Track($trackId: TrackId!) {
+    track(trackId: $trackId) {
       id
       name
       youtubeUrl
-      status
+      createdAt
+      semitones {
+        id
+        shift
+        status
+        createdAt
+      }
     }
   }
 `
 
-export const SubmitProcess = () => {
-  const [createProcess, { error, loading }] = useCreateProcessMutation()
-  const [process, { data: processData }] = useGetProcessLazyQuery({
+export const SubmitTrack = () => {
+  const [createTrack, { error, loading }] = useCreateTrackMutation()
+  const [track, { data: trackData }] = useTrackLazyQuery({
     pollInterval: 10,
   })
 
   const [youtubeUrl, setYoutubeUrl] = useState("")
 
   const handleSubmit = async () => {
-    const { data } = await createProcess({ variables: { youtubeUrl } })
-    const processId = data?.createProcess
-
-    await process({ variables: { id: processId } })
+    const { data } = await createTrack({ variables: { youtubeUrl } })
+    const trackId = data?.createTrack
+    await track({ variables: { trackId } })
   }
 
-  const isProcessing =
-    loading ||
-    (Boolean(processData?.getProcess) && processData?.getProcess.status !== "DONE")
-  const done =
-    Boolean(processData?.getProcess) && processData?.getProcess.status === "DONE"
+  const allDone = trackData?.track.semitones.every(({ status }) => status === "DONE")
+  const isProcessing = loading || (Boolean(trackData?.track) && !allDone)
+  const done = Boolean(trackData?.track) && allDone
 
   return (
     <div className="mt-6">
@@ -61,7 +66,7 @@ export const SubmitProcess = () => {
       <div className="mt-4">
         {done ? (
           <Link
-            href={`/details/${processData.getProcess.id}`}
+            href={`/track/${trackData?.track.id}`}
             className="bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg px-4 py-2.5"
           >
             View
@@ -87,10 +92,10 @@ export const SubmitProcess = () => {
       {error && (
         <div className="mt-4 text-red-500 text-sm font-semibold">{error.message}</div>
       )}
-      {processData && processData.getProcess && (
+      {trackData && trackData.track && (
         <div className="mt-4 text-green-500 text-xl font-semibold capitalize">
           <span className="mr-4">Current Status: </span>
-          {formatStatus(processData.getProcess.status)}
+          {formatStatus(isProcessing ? "Processing" : "Done")}
         </div>
       )}
     </div>
