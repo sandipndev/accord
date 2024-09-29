@@ -2,6 +2,7 @@
 
 import { Track } from "@/components/track"
 import { SemitoneStatus, useTrackQuery } from "@/lib/graphql/generated"
+import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
 
 type Props = {
@@ -30,6 +31,7 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
   const [seekTime, setSeekTime] = useState(0)
   const [isSeeking, setIsSeeking] = useState(false)
   const audioRefs = useRef<{ [key: number]: HTMLAudioElement }>({})
+  const videoRef = useRef<HTMLVideoElement>(null) // Reference to the video element
 
   const allSemitoneConversionsComplete = data?.track.semitones.every(
     ({ status }) => status === SemitoneStatus.Completed,
@@ -73,6 +75,9 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
         setCurrentTime(0)
         setSeekTime(0)
         audio.currentTime = 0
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0
+        }
       }
 
       audio.addEventListener("timeupdate", updateTime)
@@ -90,10 +95,18 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
     if (audio) {
       if (isPlaying) {
         audio.pause()
+        if (videoRef.current) {
+          videoRef.current.currentTime = audio.currentTime
+          videoRef.current.pause()
+        }
         setIsPlaying(false)
       } else {
         audio.currentTime = currentTime
         audio.play()
+        if (videoRef.current) {
+          videoRef.current.currentTime = audio.currentTime
+          videoRef.current.play()
+        }
         setIsPlaying(true)
       }
     }
@@ -116,6 +129,9 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
       if (isPlaying) {
         nextAudio.play()
       }
+      if (videoRef.current) {
+        videoRef.current.currentTime = time
+      }
       setCurrentSemitone(newSemitone)
     }
   }
@@ -132,6 +148,9 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
     if (audio) {
       audio.currentTime = seekTime
       setCurrentTime(seekTime)
+      if (videoRef.current) {
+        videoRef.current.currentTime = seekTime
+      }
     }
     setIsSeeking(false)
   }
@@ -142,6 +161,7 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
       Object.values(audioRefsCurrent).forEach((audio) => {
         audio.pause()
       })
+      videoRef.current?.pause() // Pause the video on unmount
       setIsPlaying(false)
     }
   }, [])
@@ -184,7 +204,10 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
 
   return (
     <div>
-      <div className="text-xl font-bold">{data?.track.name}</div>
+      <Link href="/" className="text-blue-500">
+        {"< "} back
+      </Link>
+      <div className="mt-2 text-xl font-bold">{data?.track.name}</div>
       <div className="text-sm text-cyan-500">{data?.track.youtubeUrl}</div>
       <hr className="mt-6 border-zinc-700" />
       <div className="mt-4">
@@ -194,6 +217,13 @@ const TrackDetail: React.FC<Props> = ({ params }) => {
             {currentSemitone > 0 ? `+${currentSemitone}` : currentSemitone}
           </strong>
         </div>
+        <video
+          ref={videoRef} // Reference to the video element
+          src={`/media/${trackId}.mp4`}
+          controls={false}
+          muted
+          className="mt-4"
+        />
         <div className="my-4">
           <button
             onClick={() => changeSemitone(-1)}

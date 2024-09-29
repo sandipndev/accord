@@ -10,9 +10,11 @@ pub async fn download_track(
     home_absolute_path: &String,
 ) -> Result<(), CommandError> {
     let download_file_at = format!("{}/{}.mp3", home_absolute_path, track_id);
-
     let status = Command::new("yt-dlp")
-        .arg("-xk")
+        .arg("--keep-video")
+        .arg("-f")
+        .arg("bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4")
+        .arg("--extract-audio")
         .arg("--audio-format")
         .arg("mp3")
         .arg("-o")
